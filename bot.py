@@ -15,7 +15,72 @@ class Bot:
 
     def step(self, x):
         global b
-
+        if 0 <= x <= 7:
+            napr = (self.see + x) % 8
+            if napr == 0:
+                if b.board[self.y - 1][self.x] == 1:
+                    self.y -= 1
+                    self.health = 0
+                elif b.board[self.y - 1][self.x] == 5:
+                    self.y -= 1
+                self.sdvig(b.board[self.y - 1][self.x])
+            elif napr == 1:
+                if b.board[self.y - 1][self.x] == 1:
+                    self.y -= 1
+                    self.x += 1
+                    self.health = 0
+                elif b.board[self.y - 1][self.x] == 5:
+                    self.y -= 1
+                    self.x += 1
+                self.sdvig(b.board[self.y - 1][self.x])
+            elif napr == 2:
+                if b.board[self.y - 1][self.x] == 1:
+                    self.x += 1
+                    self.health = 0
+                elif b.board[self.y - 1][self.x] == 5:
+                    self.x += 1
+                self.sdvig(b.board[self.y - 1][self.x])
+            elif napr == 3:
+                if b.board[self.y - 1][self.x] == 1:
+                    self.y += 1
+                    self.x += 1
+                    self.health = 0
+                elif b.board[self.y - 1][self.x] == 5:
+                    self.y += 1
+                    self.x += 1
+                self.sdvig(b.board[self.y - 1][self.x])
+            elif napr == 4:
+                if b.board[self.y - 1][self.x] == 1:
+                    self.y += 1
+                    self.health = 0
+                elif b.board[self.y - 1][self.x] == 5:
+                    self.y += 1
+                self.sdvig(b.board[self.y - 1][self.x])
+            elif napr == 5:
+                if b.board[self.y - 1][self.x] == 1:
+                    self.y += 1
+                    self.x -= 1
+                    self.health = 0
+                elif b.board[self.y - 1][self.x] == 5:
+                    self.y += 1
+                    self.x -= 1
+                self.sdvig(b.board[self.y - 1][self.x])
+            elif napr == 6:
+                if b.board[self.y - 1][self.x] == 1:
+                    self.x -= 1
+                    self.health = 0
+                elif b.board[self.y - 1][self.x] == 5:
+                    self.x -= 1
+                self.sdvig(b.board[self.y - 1][self.x])
+            elif napr == 7:
+                if b.board[self.y - 1][self.x] == 1:
+                    self.y -= 1
+                    self.x -= 1
+                    self.health = 0
+                elif b.board[self.y - 1][self.x] == 5:
+                    self.y -= 1
+                    self.x -= 1
+                self.sdvig(b.board[self.y - 1][self.x])
 
     def next_move(self):
         global b
@@ -24,13 +89,98 @@ class Bot:
         if self.counts == 10:
             self.counts = 0
             return None
+
+        if self.health == 0:
+            bots.remove(self)
+            return None
+
         command = self.matrix[self.u]
+        x, y = self.x, self.y
         if 0 <= command <= 7:
             self.step(command)
+            self.next_move()
         elif 8 <= command <= 15:
-            pass # step
+            if self.see == 0:
+                if b.board[y - 1][x] == 1:
+                    self.health += 10
+                    b.board[y - 1][x] = 5
+                    b.set_poison(1)
+                elif b.board[y - 1][x] == 4:
+                    self.health += 10
+                    b.board[y - 1][x] = 5
+                    b.set_food(1)
+                self.sdvig(b.board[y - 1][x])
+            elif self.see == 1:
+                if b.board[y - 1][x + 1] == 1:
+                    self.health += 10
+                    b.board[y - 1][x + 1] = 5
+                    b.set_poison(1)
+                elif b.board[y - 1][x + 1] == 4:
+                    self.health += 10
+                    b.board[y - 1][x + 1] = 5
+                    b.set_food(1)
+                self.sdvig(b.board[y - 1][x + 1])
+            elif self.see == 2:
+                if b.board[y][x + 1] == 1:
+                    self.health += 10
+                    b.board[y][x + 1] = 5
+                    b.set_poison(1)
+                elif b.board[y][x + 1] == 4:
+                    self.health += 10
+                    b.board[y][x + 1] = 5
+                    b.set_food(1)
+                self.sdvig(b.board[y][x + 1])
+            elif self.see == 3:
+                if b.board[y + 1][x + 1] == 1:
+                    self.health += 10
+                    b.board[y + 1][x + 1] = 5
+                    b.set_poison(1)
+                elif b.board[y + 1][x + 1] == 4:
+                    self.health += 10
+                    b.board[y + 1][x + 1] = 5
+                    b.set_food(1)
+                self.sdvig(b.board[y + 1][x + 1])
+            elif self.see == 4:
+                if b.board[y + 1][x] == 1:
+                    self.health += 10
+                    b.board[y + 1][x] = 5
+                    b.set_poison(1)
+                elif b.board[y + 1][x] == 4:
+                    self.health += 10
+                    b.board[y + 1][x] = 5
+                    b.set_food(1)
+                self.sdvig(b.board[y + 1][x])
+            elif self.see == 5:
+                if b.board[y + 1][x - 1] == 1:
+                    self.health += 10
+                    b.board[y + 1][x - 1] = 5
+                    b.set_poison(1)
+                elif b.board[y + 1][x - 1] == 4:
+                    self.health += 10
+                    b.board[y + 1][x - 1] = 5
+                    b.set_food(1)
+                self.sdvig(b.board[y + 1][x - 1])
+            elif self.see == 6:
+                if b.board[y][x - 1] == 1:
+                    self.health += 10
+                    b.board[y][x - 1] = 5
+                    b.set_poison(1)
+                elif b.board[y][x - 1] == 4:
+                    self.health += 10
+                    b.board[y][x - 1] = 5
+                    b.set_food(1)
+                self.sdvig(b.board[y][x - 1])
+            elif self.see == 7:
+                if b.board[y - 1][x - 1] == 1:
+                    self.health += 10
+                    b.board[y - 1][x - 1] = 5
+                    b.set_poison(1)
+                elif b.board[y - 1][x - 1] == 4:
+                    self.health += 10
+                    b.board[y - 1][x - 1] = 5
+                    b.set_food(1)
+                self.sdvig(b.board[y - 1][x - 1])
         elif 16 <= command <= 23:
-            x, y = self.x, self.y
             if command == 16:
                 self.sdvig(b.board[y - 1][x - 1])
             elif command == 17:
@@ -71,8 +221,6 @@ class Board:
         self.width = width
         self.height = height
         self.board = np.array([[5] * height for _ in range(width)])
-        self.board[0] = 2
-        self.board[:][0] = 2
         self.left = 0
         self.top = 0
         self.cell_size = 20
@@ -142,7 +290,7 @@ class Board:
             while self.board[y][x] != 0:
                 x = randint(0, 8)
                 y = randint(0, 8)
-            self.board[y][x] = -1
+            self.board[y][x] = 1
 
     def set_food(self, n):
         for i in range(n):
@@ -151,7 +299,7 @@ class Board:
             while self.board[y][x] != 0:
                 x = randint(0, 8)
                 y = randint(0, 8)
-            self.board[y][x] = 5
+            self.board[y][x] = 4
 
     def get_click(self, mouse_pos):
         pass
