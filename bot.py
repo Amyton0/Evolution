@@ -2,8 +2,25 @@ from random import randint
 import pygame
 import sys
 
+WIDTH = 1200
+HEIGHT = 600
+FOOD = 120
+POISON = 60
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT + 80))
+screen.fill((255, 255, 255))
+fps = 7
+bots = []
+bots_reserv = []
+running = True
+running_loc = True
+
+clock = pygame.time.Clock()
+random_location = ''
+
+
 class Bot:
-    def __init__(self, x, y, matrix=[randint(0, 64) for _ in range(64)]):
+    def __init__(self, x, y, matrix=[randint(0, 64) for _ in range(64)]):  # создаём матрицу команд бота
         self.matrix = matrix
         self.see = 0
         self.health = 35
@@ -12,7 +29,7 @@ class Bot:
         self.y = y
         self.counts = 0
 
-    def step(self, x):
+    def step(self, x):  # бот шагает
         global b
         if self in bots:
             x1, y1 = self.x, self.y
@@ -113,7 +130,7 @@ class Bot:
                 b.board[x1][y1] = 5
                 b.board[self.x][self.y] = self
 
-    def next_move(self):
+    def next_move(self):  # определяется следующий ход бота
         global b
         self.counts += 1
         if self.counts == 10:
@@ -218,7 +235,7 @@ class Bot:
             self.sdvig(command)
             self.next_move()
 
-    def sdvig(self, s):
+    def sdvig(self, s):  # сдвиг в матрице
         if str(s) == 'bot':
             self.u = (self.u + 3) % 64
         else:
@@ -229,7 +246,7 @@ class Bot:
 
 
 class Board:
-    def __init__(self, width, height):
+    def __init__(self, width, height):  # создание поля
         self.width = width
         self.height = height
         self.board = [[5 for __ in range(height)] for _ in range(width)]
@@ -242,14 +259,14 @@ class Board:
         self.cell_size = 30
         self.cell = ''
 
-    def render(self):
+    def render(self):  # рисование поля
         for x in range(self.width):
             for y in range(self.height):
                 if str(self.board[x][y]) == 'bot':
                     if self.board[x][y] in bots:
                         pygame.draw.rect(screen, (0, 0, 255), (
                             self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size, self.cell_size))
-                        pygame.draw.rect(screen, (255, 255, 255), (
+                        pygame.draw.rect(screen, (150, 150, 150), (
                             self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size, self.cell_size),
                                          1)
                         hp = str(self.board[x][y].health)
@@ -263,7 +280,7 @@ class Board:
                     pygame.draw.rect(screen, (255, 0, 0), (
                         self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size,
                         self.cell_size))
-                    pygame.draw.rect(screen, (255, 255, 255), (
+                    pygame.draw.rect(screen, (150, 150, 150), (
                         self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size,
                         self.cell_size),
                                      1)
@@ -271,7 +288,7 @@ class Board:
                     pygame.draw.rect(screen, (0, 0, 255), (
                         self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size,
                         self.cell_size))
-                    pygame.draw.rect(screen, (255, 255, 255), (
+                    pygame.draw.rect(screen, (150, 150, 150), (
                         self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size,
                         self.cell_size),
                                      1)
@@ -279,7 +296,7 @@ class Board:
                     pygame.draw.rect(screen, (128, 128, 128), (
                         self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size,
                         self.cell_size))
-                    pygame.draw.rect(screen, (255, 255, 255), (
+                    pygame.draw.rect(screen, (150, 150, 150), (
                         self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size,
                         self.cell_size),
                                      1)
@@ -287,7 +304,7 @@ class Board:
                     pygame.draw.rect(screen, (0, 255, 0), (
                         self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size,
                         self.cell_size))
-                    pygame.draw.rect(screen, (255, 255, 255), (
+                    pygame.draw.rect(screen, (150, 150, 150), (
                         self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size,
                         self.cell_size),
                                      1)
@@ -295,12 +312,12 @@ class Board:
                     pygame.draw.rect(screen, (0, 0, 0), (
                         self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size,
                         self.cell_size))
-                    pygame.draw.rect(screen, (255, 255, 255), (
+                    pygame.draw.rect(screen, (150, 150, 150), (
                         self.left + x * self.cell_size, self.top + y * self.cell_size, self.cell_size,
                         self.cell_size),
                                      1)
         if self.cell and self.cell[0] != 0 and self.cell[1] != self.height - 1 and self.cell[1] != 0 and \
-                self.cell[0] != self.width - 1:
+                self.cell[0] != self.width - 1 and running_loc:
             pygame.draw.rect(screen, (255, 215, 0), (
                 self.cell[0] * self.cell_size - 1, self.cell[1] * self.cell_size - 1, self.cell_size + 1,
                 self.cell_size + 1), 2)
@@ -310,7 +327,7 @@ class Board:
         self.top = top
         self.cell_size = cell_size
 
-    def set_poison(self, n):
+    def set_poison(self, n):  # расставляем n единиц яда
         for _ in range(n):
             x = randint(0, self.width - 1)
             y = randint(0, self.height - 1)
@@ -319,7 +336,7 @@ class Board:
                 y = randint(0, self.height - 1)
             self.board[x][y] = 1
 
-    def set_food(self, n):
+    def set_food(self, n):  # расставляем n единиц еды
         for _ in range(n):
             x = randint(0, self.width - 1)
             y = randint(0, self.height - 1)
@@ -328,7 +345,7 @@ class Board:
                 y = randint(0, self.height - 1)
             self.board[x][y] = 4
 
-    def set_bot(self, n):
+    def set_bot(self, n):  # расставляем n ботов
         global bots
         for _ in range(n):
             x = randint(1, self.width - 2)
@@ -340,7 +357,7 @@ class Board:
             bots.append(bo)
             self.board[x][y] = bo
 
-    def get_cell(self, mouse_pos):
+    def get_cell(self, mouse_pos):  # отпределяется, на какую клетку поля нажали
         for i in range(self.height):
             for j in range(self.width):
                 if self.left + self.cell_size * j <= mouse_pos[0] <= self.left + self.cell_size * (j + 1) and \
@@ -358,7 +375,7 @@ class Board:
         self.render()
         pygame.display.flip()
 
-    def key_press(self, key):
+    def key_press(self, key):  # ставим еду/яд/бота в пользовательской расстановке
         if self.cell:
             if key == pygame.K_p:
                 if b.board[self.cell[0]][self.cell[1]] == 1:
@@ -379,8 +396,9 @@ class Board:
             b.render()
 
 
-def new_poko():
-    for _ in bots_reserv:
+def new_poko():  # боты клонируются и мутируют
+    global bots_reserv, bots
+    for i in bots_reserv:
         for j in range(7):
             x = randint(1, b.width - 2)
             y = randint(1, b.height - 2)
@@ -403,8 +421,8 @@ def new_poko():
         b.board[x][y] = bo
 
 
-def start_screen():
-    intro_text = ["ЭВОЛЮЦИЯ", "", "", "", "Боты перемещаются в зависимости от команд в их матрицах, едят " +
+def start_screen():  # начальный экран (с правилами игры)
+    intro_text = ["", "", "ЭВОЛЮЦИЯ", "", "", "", "Боты перемещаются в зависимости от команд в их матрицах, едят " +
                   "еду, яд, ", "клонируются, мутируют. На каждом боте написано, сколько у него здоровья. ",
                   "Расставлять еду и яд можно случайным образом, а можно самостоятельно. ", "Изначально стены " +
                   "только по краям, но можно их поставить и в других местах", "При пользовательской расстановке " +
@@ -433,124 +451,163 @@ def start_screen():
                 return
         pygame.display.flip()
         clock.tick(fps)
+    pygame.display.flip()
 
 
-WIDTH = 1200
-HEIGHT = 600
-FOOD = 60
-POISON = 60
-pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-screen.fill((255, 255, 255))
-fps = 7
-bots = []
-bots_reserv = []
-running = True
-running_loc = True
+def game():  # сама игра
+    global running_loc, random_location, running, POISON, FOOD, fps, bots, bots_reserv, b
+    q = False
 
-clock = pygame.time.Clock()
-b = Board(40, 20)
-random_location = ''
+    while running_loc:  # кнопки меню и пользовательская расстановка
+        while not str(random_location):
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    running_loc = False
+                    random_location = True
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        if (WIDTH + 80) // 2 - 160 <= event.pos[0] <= (WIDTH + 80) // 2 + 160 and \
+                                HEIGHT // 2 - 150 <= event.pos[1] <= HEIGHT // 2 - 30:
+                            random_location = True
+                        if (WIDTH + 80) // 2 - 160 <= event.pos[0] <= (WIDTH + 80) // 2 + 160 and \
+                                HEIGHT // 2 + 55 <= event.pos[1] <= HEIGHT // 2 + 175:
+                            random_location = False
 
-start_screen()
-while running_loc:
-    while not str(random_location):
+            screen.fill((127, 255, 212))
+            pygame.draw.rect(screen, (70, 130, 180), ((WIDTH + 80) // 2 - 160, HEIGHT // 2 - 150, 320, 120), 0)
+            pygame.draw.rect(screen, (70, 130, 180), ((WIDTH + 80) // 2 - 160, HEIGHT // 2 + 55, 320, 120), 0)
+            font = pygame.font.Font(None, 50)
+            text = font.render("Случайная", 1, (255, 255, 255))
+            text_ = font.render("расстановка", 1, (255, 255, 255))
+            text_x = (WIDTH + 80) // 2 - text.get_width() // 2
+            text_y = HEIGHT // 2 - 150 + text.get_height() // 2
+            text__x = (WIDTH + 80) // 2 - text.get_width() // 2 - 10
+            text__y = HEIGHT // 2 + text.get_height() - 120
+            text1 = font.render("Пользовательская", 1, (255, 255, 255))
+            text1_ = font.render("расстановка", 1, (255, 255, 255))
+            text1_x = (WIDTH + 80) // 2 - text.get_width() // 2 - 65
+            text1_y = HEIGHT // 2 + 55 + text.get_height() // 2
+            text1__x = (WIDTH + 80) // 2 - text.get_width() // 2 - 10
+            text1__y = HEIGHT // 2 + 90 + text.get_height()
+            screen.blit(text, (text_x, text_y))
+            screen.blit(text_, (text__x, text__y))
+            screen.blit(text1, (text1_x, text1_y))
+            screen.blit(text1_, (text1__x, text1__y))
+            pygame.display.flip()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 running_loc = False
-                random_location = True
+                q = True
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     if WIDTH // 2 - 160 <= event.pos[0] <= WIDTH // 2 + 160 and \
-                            HEIGHT // 2 - 150 <= event.pos[1] <= HEIGHT // 2 - 30:
-                        random_location = True
-                    if WIDTH // 2 - 160 <= event.pos[0] <= WIDTH // 2 + 160 and \
-                            HEIGHT // 2 + 55 <= event.pos[1] <= HEIGHT // 2 + 175:
-                        random_location = False
-
-        screen.fill((127, 255, 212))
-        pygame.draw.rect(screen, (70, 130, 180), (WIDTH // 2 - 160, HEIGHT // 2 - 150, 320, 120), 0)
-        pygame.draw.rect(screen, (70, 130, 180), (WIDTH // 2 - 160, HEIGHT // 2 + 55, 320, 120), 0)
+                            HEIGHT + 15 <= event.pos[1] <= HEIGHT + 65:
+                        fps = 7
+                        bots = []
+                        bots_reserv = []
+                        running = True
+                        running_loc = True
+                        random_location = ''
+                        b = Board(40, 20)
+                        FOOD = 120
+                        POISON = 60
+                        game()
+                    b.get_click(event.pos)
+            if event.type == pygame.KEYDOWN:
+                b.key_press(event.key)
+                if event.key == pygame.K_RETURN:
+                    running_loc = False
+        screen.fill((200, 200, 200))
+        pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2 - 160, HEIGHT + 15, 320, 50), 1)
         font = pygame.font.Font(None, 50)
-        text = font.render("Случайная", 1, (255, 255, 255))
-        text_ = font.render("расстановка", 1, (255, 255, 255))
-        text_x = WIDTH // 2 - text.get_width() // 2
-        text_y = HEIGHT // 2 - 150 + text.get_height() // 2
-        text__x = WIDTH // 2 - text.get_width() // 2 - 10
-        text__y = HEIGHT // 2 + text.get_height() - 120
-        text1 = font.render("Пользовательская", 1, (255, 255, 255))
-        text1_ = font.render("расстановка", 1, (255, 255, 255))
-        text1_x = WIDTH // 2 - text.get_width() // 2 - 65
-        text1_y = HEIGHT // 2 + 55 + text.get_height() // 2
-        text1__x = WIDTH // 2 - text.get_width() // 2 - 10
-        text1__y = HEIGHT // 2 + 90 + text.get_height()
+        text = font.render("В меню", 1, (0, 0, 0))
+        text_x = WIDTH // 2 - 70
+        text_y = HEIGHT + 25
         screen.blit(text, (text_x, text_y))
-        screen.blit(text_, (text__x, text__y))
-        screen.blit(text1, (text1_x, text1_y))
-        screen.blit(text1_, (text1__x, text1__y))
+        b.render()
         pygame.display.flip()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+        if random_location:
             running_loc = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            b.get_click(event.pos)
-        if event.type == pygame.KEYDOWN:
-            b.key_press(event.key)
-            if event.key == pygame.K_RETURN:
-                running_loc = False
+
+    if not q:
+        b.set_bot(64)
     if random_location:
-        running_loc = False
-    pygame.display.flip()
-
-b.set_bot(64)
-if random_location:
-    b.set_poison(POISON)
-    b.set_food(FOOD)
-else:
-    POISON = 0
-    FOOD = 0
-    for i in b.board:
-        POISON += i.count(1)
-        FOOD += i.count(4)
-b.render()
-
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 4:
-                fps += 1
-            if event.button == 5:
-                if fps != 0:
-                    fps -= 1
-    poison_ = 0
-    food_ = 0
-    for i in b.board:
-        poison_ += i.count(1)
-        food_ += i.count(4)
-    if poison_ < POISON:
-        b.set_poison(POISON - poison_)
-    if food_ < FOOD:
-        b.set_food(FOOD - food_)
-    for i in bots:
-        i.health -= 1
-        if i.health < 1:
-            b.board[i.x][i.y] = 5
-            bots.remove(i)
-        i.next_move()
-        if 5 in b.board[0] or 5 in b.board[-1]:
-            running = False
-        if len(bots) <= 8:
-            bots_reserv = bots[:]
-            for i in bots:
-                b.board[i.x][i.y] = 5
-            bots.clear()
-            new_poko()
-    clock.tick(fps)
-
+        b.set_poison(POISON)
+        b.set_food(FOOD)
+    else:
+        POISON = 0
+        FOOD = 0
+        for i in b.board:
+            POISON += i.count(1)
+            FOOD += i.count(4)
     b.render()
     pygame.display.flip()
+
+    while running:  # цикл игры
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if WIDTH // 2 - 160 <= event.pos[0] <= WIDTH // 2 + 160 and \
+                            HEIGHT + 15 <= event.pos[1] <= HEIGHT + 65:
+                        fps = 7
+                        bots = []
+                        bots_reserv = []
+                        running = True
+                        running_loc = True
+                        random_location = ''
+                        b = Board(40, 20)
+                        FOOD = 120
+                        POISON = 60
+                        game()
+                if event.button == 4:
+                    fps += 1
+                if event.button == 5:
+                    if fps != 0:
+                        fps -= 1
+
+        screen.fill((200, 200, 200))
+        pygame.draw.rect(screen, (0, 0, 0), (WIDTH // 2 - 160, HEIGHT + 15, 320, 50), 1)
+        font = pygame.font.Font(None, 50)
+        text = font.render("В меню", 1, (0, 0, 0))
+        text_x = WIDTH // 2 - 70
+        text_y = HEIGHT + 25
+        screen.blit(text, (text_x, text_y))
+        poison_ = 0
+        food_ = 0
+        for i in b.board:
+            poison_ += i.count(1)
+            food_ += i.count(4)
+        if poison_ < POISON:
+            b.set_poison(POISON - poison_)
+        if food_ < FOOD:
+            b.set_food(FOOD - food_)
+        for i in bots:
+            i.health -= 1
+            if i.health < 1:
+                b.board[i.x][i.y] = 5
+                bots.remove(i)
+            i.next_move()
+            if 5 in b.board[0] or 5 in b.board[-1]:
+                running = False
+            if len(bots) <= 8:
+                bots_reserv = bots[:]
+                for i in bots:
+                    b.board[i.x][i.y] = 5
+                bots.clear()
+                new_poko()
+        clock.tick(fps)
+
+        b.render()
+        pygame.display.flip()
+
+
+b = Board(40, 20)
+
+start_screen()
+game()
 pygame.quit()
